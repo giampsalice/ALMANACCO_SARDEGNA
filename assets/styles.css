@@ -62,6 +62,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .cover::before, .modal-cover::before { content: ""; position: absolute; inset: 0; opacity: .34; background: repeating-linear-gradient(115deg, transparent 0 22px, rgba(255,255,255,.08) 23px 24px); }
 .cover::after, .modal-cover::after { content: "A\A S"; white-space: pre; position: absolute; top: 9%; right: 9%; font: 400 1rem/1 var(--serif); text-align: center; border: 1px solid currentColor; padding: .65rem .7rem; }
 .cover img, .modal-cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cover.has-image::before, .cover.has-image::after, .modal-cover.has-image::before, .modal-cover.has-image::after, .cover.has-image .cover-copy, .modal-cover.has-image .cover-copy { display: none; }
 .cover-copy { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; padding: 10%; z-index: 1; }
 .cover-copy small { text-transform: uppercase; letter-spacing: .16em; font-weight: 600; }
 .cover-copy strong { font: 400 clamp(2.5rem, 5vw, 4.5rem)/.9 var(--serif); margin-top: .6rem; }

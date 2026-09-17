@@ -18,7 +18,8 @@ function issuePalette(issue) {
 function coverMarkup(issue, modal = false) {
   const [bg, fg] = issuePalette(issue);
   const image = issue.coverUrl ? `<img src="${escapeAttr(issue.coverUrl)}" alt="${escapeAttr(issue.coverAlt)}" loading="lazy">` : "";
-  return `<div ${modal ? 'id="modal-cover"' : ""} class="${modal ? "modal-cover" : "cover"}" style="--cover-bg:${bg};--cover-fg:${fg}">
+  const imageClass = issue.coverUrl ? " has-image" : "";
+  return `<div ${modal ? 'id="modal-cover"' : ""} class="${modal ? "modal-cover" : "cover"}${imageClass}" style="--cover-bg:${bg};--cover-fg:${fg}">
     ${image}<div class="cover-copy"><small>Almanacco della Sardegna</small><strong>${escapeHtml(issue.yearLabel)}</strong><span>Volume ${escapeHtml(issue.volume ?? "—")}</span></div>
   </div>`;
 }
