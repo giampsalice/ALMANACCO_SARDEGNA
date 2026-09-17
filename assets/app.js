@@ -8,6 +8,7 @@ const grid = $("#grid");
 const dialog = $("#volume-dialog");
 const volumeCard = $("#volume-card");
 const config = window.ALMANACCO_CONFIG || {};
+const zenodoCache = new Map();
 
 function issuePalette(issue) {
   const index = Math.abs(Number(issue.volume || issue.year)) % palette.length;
@@ -124,6 +125,60 @@ async function loadCatalog() {
   }
 }
 
+function zenodoRecordId(value = "") {
+  const input = String(value).trim();
+  return input.match(/zenodo\.(\d+)/i)?.[1] || input.match(/zenodo\.org\/(?:records?|record)\/(\d+)/i)?.[1] || null;
+}
+
+function directPdf(value = "") {
+  const input = String(value).trim();
+  return /^https?:\/\/.*\.pdf(?:[?#].*)?$/i.test(input) ? input : null;
+}
+
+async function resolvePdf(value = "") {
+  const input = String(value).trim();
+  if (!input) return { url: "", recordUrl: "", status: "PDF non ancora disponibile" };
+  const direct = directPdf(input);
+  if (direct) return { url: direct, recordUrl: direct, status: "Il PDF si apre in una nuova scheda" };
+  const recordId = zenodoRecordId(input);
+  if (!recordId) {
+    if (/^https?:\/\//i.test(input)) return { url: input, recordUrl: input, status: "Il documento si apre in una nuova scheda" };
+    if (/^10\.\d{4,9}\//i.test(input)) return { url: `https://doi.org/${input}`, recordUrl: `https://doi.org/${input}`, status: "Apri il record associato al DOI" };
+    return { url: "", recordUrl: "", status: "Collegamento al PDF non riconosciuto" };
+  }
+  if (zenodoCache.has(recordId)) return zenodoCache.get(recordId);
+  const promise = (async () => {
+    const recordUrl = `https://zenodo.org/records/${recordId}`;
+    try {
+      const response = await fetch(`https://zenodo.org/api/records/${recordId}`, { cache: "force-cache" });
+      if (!response.ok) throw new Error(`Zenodo HTTP ${response.status}`);
+      const record = await response.json();
+      const pdfs = (record.files || []).filter(file => /\.pdf$/i.test(file.key || file.filename || "")).sort((a, b) => (b.size || 0) - (a.size || 0));
+      if (!pdfs.length) return { url: recordUrl, recordUrl, status: "Nessun PDF rilevato: apri il record Zenodo" };
+      const file = pdfs[0];
+      const filename = file.key || file.filename;
+      const url = file.links?.content || file.links?.download || `https://zenodo.org/records/${recordId}/files/${encodeURIComponent(filename)}?download=1`;
+      return { url, recordUrl, status: pdfs.length > 1 ? `Apre il PDF principale (${pdfs.length} PDF nel record)` : "Apre il PDF archiviato su Zenodo" };
+    } catch (error) {
+      return { url: recordUrl, recordUrl, status: "Verifica automatica non riuscita: apri il record Zenodo" };
+    }
+  })();
+  zenodoCache.set(recordId, promise);
+  return promise;
+}
+
+function setPdfButton(result) {
+  const pdf = $("#pdf-link");
+  const available = /^https?:\/\//i.test(result.url);
+  pdf.href = available ? result.url : "#";
+  pdf.setAttribute("aria-disabled", String(!available));
+  $("#pdf-status").textContent = result.status;
+  pdf.onclick = available ? null : event => {
+    event.preventDefault();
+    showToast("Inserisci nel CSV il DOI, l’URL del record Zenodo o il collegamento diretto al PDF.");
+  };
+}
+
 function buildDecades() {
   const decades = [...new Set(state.issues.map(x => x.decade))];
   const items = [["all", "Tutte"], ...decades.map(d => [String(d), `Anni ${String(d).slice(2)}`])];
@@ -176,13 +231,9 @@ function openIssue(issue) {
   $("#back-title").textContent = issue.yearLabel;
   $("#dialog-meta").textContent = [issue.place, issue.publisher, issue.lastPage ? `${issue.lastPage} pagine indicizzate` : ""].filter(Boolean).join(" · ");
   $("#dialog-contents").innerHTML = contentsMarkup(issue);
-  const pdf = $("#pdf-link");
-  const available = /^https?:\/\//i.test(issue.pdfUrl);
-  pdf.href = available ? issue.pdfUrl : "#";
-  pdf.setAttribute("aria-disabled", String(!available));
-  $("#pdf-status").textContent = available ? "Il documento si apre in una nuova scheda" : "PDF non ancora disponibile";
-  if (!available) pdf.onclick = event => { event.preventDefault(); showToast("L’URL del PDF non è stato ancora inserito nel foglio."); };
-  else pdf.onclick = null;
+  setPdfButton({ url: "", status: issue.pdfUrl ? "Ricerca del PDF su Zenodo…" : "PDF non ancora disponibile" });
+  const activeId = issue.id;
+  resolvePdf(issue.pdfUrl).then(result => { if (state.active?.id === activeId) setPdfButton(result); });
   history.replaceState(null, "", `#numero=${encodeURIComponent(issue.id)}`);
   dialog.showModal();
   notifyHeight();
