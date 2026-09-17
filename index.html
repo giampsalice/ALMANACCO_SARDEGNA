@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#183c35">
+  <title>Archivio Almanacco della Sardegna</title>
+  <meta name="description" content="Sfoglia l’archivio digitale dell’Almanacco della Sardegna per decennio e consulta gli indici dei volumi.">
+  <link rel="stylesheet" href="assets/styles.css">
+  <script src="assets/config.js" defer></script>
+  <script src="assets/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#catalogo">Vai al catalogo</a>
+  <main>
+    <header class="hero">
+      <div class="hero__eyebrow">Archivio digitale</div>
+      <h1>Almanacco<br><span>della Sardegna</span></h1>
+      <p>Quarant’anni di storia, cultura e giornalismo sardo. Scegli un decennio oppure cerca un autore o un contributo.</p>
+      <div class="hero__rule" aria-hidden="true"><span></span></div>
+    </header>
+
+    <section class="controls" aria-label="Filtri del catalogo">
+      <div class="decades" id="decades" role="group" aria-label="Filtra per decennio"></div>
+      <label class="search">
+        <span class="sr-only">Cerca nel catalogo</span>
+        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg>
+        <input id="search" type="search" placeholder="Cerca titolo, autore, argomento…" autocomplete="off">
+      </label>
+      <div class="data-source" id="data-source" aria-live="polite">Caricamento dati…</div>
+    </section>
+
+    <section class="catalog" id="catalogo" aria-live="polite" aria-busy="true">
+      <div class="catalog__meta">
+        <h2 id="catalog-title">Tutti i numeri</h2>
+        <p id="result-count"></p>
+      </div>
+      <div class="grid" id="grid"></div>
+      <div class="empty" id="empty" hidden>
+        <p>Nessun numero corrisponde alla ricerca.</p>
+        <button type="button" id="reset">Azzera i filtri</button>
+      </div>
+    </section>
+  </main>
+
+  <dialog class="volume-dialog" id="volume-dialog" aria-labelledby="dialog-title">
+    <button class="dialog-close" type="button" data-close aria-label="Chiudi il dettaglio">×</button>
+    <div class="volume" id="volume-card">
+      <section class="volume__front" aria-label="Copertina del numero">
+        <div class="modal-cover" id="modal-cover"></div>
+        <div class="front-copy">
+          <p class="kicker" id="dialog-volume"></p>
+          <h2 id="dialog-title"></h2>
+          <p id="dialog-meta"></p>
+          <button class="flip-button" type="button" data-flip>
+            <span>Scopri i contenuti</span><span aria-hidden="true">→</span>
+          </button>
+        </div>
+      </section>
+      <section class="volume__back" aria-label="Indice del volume">
+        <div class="back-head">
+          <div>
+            <p class="kicker">Indice del volume</p>
+            <h2 id="back-title"></h2>
+          </div>
+          <button class="flip-button flip-button--light" type="button" data-flip aria-label="Torna alla copertina">← Copertina</button>
+        </div>
+        <div class="contents" id="dialog-contents"></div>
+        <div class="pdf-panel">
+          <div>
+            <strong>Consulta il numero completo</strong>
+            <span id="pdf-status">PDF non ancora disponibile</span>
+          </div>
+          <a class="pdf-button" id="pdf-link" href="#" target="_blank" rel="noopener">Apri il PDF <span aria-hidden="true">↗</span></a>
+        </div>
+      </section>
+    </div>
+  </dialog>
+
+  <template id="card-template">
+    <article class="issue-card">
+      <button class="issue-card__button" type="button">
+        <div class="cover"></div>
+        <div class="issue-card__info">
+          <span class="issue-card__year"></span>
+          <h3 class="issue-card__title"></h3>
+          <span class="issue-card__action">Apri il numero <span aria-hidden="true">↗</span></span>
+        </div>
+      </button>
+    </article>
+  </template>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

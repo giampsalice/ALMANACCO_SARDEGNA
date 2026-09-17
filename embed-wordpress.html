@@ -1,0 +1,17 @@
+<!-- Incolla questo codice in un blocco HTML personalizzato di WordPress. -->
+<iframe
+  id="almanacco-archive"
+  title="Archivio dell’Almanacco della Sardegna"
+  src="https://NOME-UTENTE.github.io/NOME-REPOSITORY/"
+  loading="lazy"
+  style="width:100%;min-height:900px;border:0;display:block"
+  allow="fullscreen"
+></iframe>
+<script>
+  window.addEventListener('message', function (event) {
+    if (event.origin !== 'https://NOME-UTENTE.github.io') return;
+    if (!event.data || event.data.type !== 'almanacco:height') return;
+    var frame = document.getElementById('almanacco-archive');
+    if (frame) frame.style.height = Math.max(700, event.data.height) + 'px';
+  });
+</script>
