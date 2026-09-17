@@ -157,7 +157,8 @@ async function resolvePdf(value = "") {
       if (!pdfs.length) return { url: recordUrl, recordUrl, status: "Nessun PDF rilevato: apri il record Zenodo" };
       const file = pdfs[0];
       const filename = file.key || file.filename;
-      const url = file.links?.content || file.links?.download || `https://zenodo.org/records/${recordId}/files/${encodeURIComponent(filename)}?download=1`;
+      const encodedFilename = filename.split("/").map(part => encodeURIComponent(part)).join("/");
+      const url = `https://zenodo.org/records/${recordId}/files/${encodedFilename}?download=1`;
       return { url, recordUrl, status: pdfs.length > 1 ? `Apre il PDF principale (${pdfs.length} PDF nel record)` : "Apre il PDF archiviato su Zenodo" };
     } catch (error) {
       return { url: recordUrl, recordUrl, status: "Verifica automatica non riuscita: apri il record Zenodo" };
