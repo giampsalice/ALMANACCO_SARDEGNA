@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flusso di lavoro — Digitalizzazione dell'Almanacco</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EDE6D6;
+    --paper-2:#E4DAC4;
+    --ink:#26241E;
+    --ink-soft:#5B564A;
+    --teal:#2F6E62;
+    --teal-soft:#DDE9E4;
+    --rust:#A8542E;
+    --gold:#B08D3E;
+    --line:#C9BEA3;
+    --card:#F7F3E9;
+    --radius:6px;
+  }
+
+  *{box-sizing:border-box;}
+
+  html,body{margin:0;padding:0;}
+
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    padding:56px 20px 80px;
+  }
+
+  .wrap{
+    max-width:760px;
+    margin:0 auto;
+  }
+
+  header{
+    margin-bottom:52px;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:24px;
+  }
+
+  .kicker{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    letter-spacing:.02em;
+    color:var(--teal);
+    margin:0 0 10px;
+  }
+
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(28px, 4vw, 38px);
+    line-height:1.15;
+    margin:0 0 12px;
+    letter-spacing:-.01em;
+  }
+
+  .subtitle{
+    font-size:15.5px;
+    color:var(--ink-soft);
+    max-width:56ch;
+    margin:0;
+  }
+
+  /* --- edit hint --- */
+  .edit-hint{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-top:18px;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .edit-hint svg{width:13px;height:13px;flex:none;}
+
+  /* --- source node (starting point) --- */
+  .source{
+    display:flex;
+    gap:16px;
+    align-items:flex-start;
+    background:var(--teal-soft);
+    border:1px solid var(--teal);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin-bottom:8px;
+  }
+  .source .icon{
+    color:var(--teal);
+    flex:none;
+    margin-top:2px;
+  }
+  .source h2{
+    font-family:'Fraunces', serif;
+    font-size:16.5px;
+    font-weight:600;
+    margin:0 0 4px;
+  }
+  .source p{
+    margin:0;
+    font-size:14px;
+    color:var(--ink-soft);
+  }
+
+  /* --- timeline --- */
+  .timeline{
+    position:relative;
+    margin-top:8px;
+    padding-left:52px;
+  }
+
+  .timeline::before{
+    content:"";
+    position:absolute;
+    left:19px;
+    top:6px;
+    bottom:6px;
+    width:2px;
+    background:var(--line);
+  }
+
+  .step{
+    position:relative;
+    margin-bottom:6px;
+  }
+
+  .step:not(:last-child){
+    padding-bottom:34px;
+  }
+
+  .step-num{
+    position:absolute;
+    left:-52px;
+    top:0;
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:var(--card);
+    border:2px solid var(--ink);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:16px;
+  }
+
+  .step-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px 22px 20px;
+  }
+
+  .step-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--teal);
+    text-transform:none;
+    margin:0 0 6px;
+  }
+
+  .step-title{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:19px;
+    margin:0 0 8px;
+    line-height:1.25;
+  }
+
+  .step-desc{
+    margin:0;
+    font-size:14.5px;
+    color:var(--ink-soft);
+  }
+
+  .step-desc + .step-desc{
+    margin-top:8px;
+  }
+
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:12px;
+  }
+
+  .chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:4px 9px;
+    color:var(--ink);
+  }
+
+  .chip.gold{ border-color:var(--gold); color:#7a611f; background:#F3EAD3;}
+  .chip.rust{ border-color:var(--rust); color:var(--rust); background:#F2E3DA;}
+
+  /* --- side/context box after step 2 --- */
+  .context-note{
+    position:relative;
+    margin:0 0 34px;
+    padding-left:0;
+  }
+
+  .context-note .step-card{
+    background:transparent;
+    border:1px dashed var(--rust);
+  }
+
+  .context-note .step-tag{ color:var(--rust); }
+
+  /* --- output / destination --- */
+  .destination{
+    margin-top:14px;
+    display:flex;
+    gap:16px;
+    align-items:flex-start;
+    background:var(--ink);
+    color:var(--paper);
+    border-radius:var(--radius);
+    padding:20px 22px;
+  }
+
+  .destination .icon{ color:var(--gold); flex:none; margin-top:2px; }
+  .destination h2{
+    font-family:'Fraunces', serif;
+    font-size:17px;
+    font-weight:600;
+    margin:0 0 6px;
+    color:#fff;
+  }
+  .destination p{
+    margin:0;
+    font-size:14px;
+    color:#D8D3C4;
+  }
+
+  /* --- closing / methodological note --- */
+  .method-note{
+    margin-top:44px;
+    padding-top:24px;
+    border-top:1px solid var(--line);
+    display:flex;
+    gap:18px;
+  }
+
+  .method-note .bar{
+    flex:none;
+    width:3px;
+    background:var(--gold);
+    border-radius:2px;
+  }
+
+  .method-note h3{
+    font-family:'Fraunces', serif;
+    font-size:15.5px;
+    margin:0 0 6px;
+  }
+
+  .method-note p{
+    margin:0;
+    font-size:14px;
+    color:var(--ink-soft);
+    max-width:60ch;
+  }
+
+  footer{
+    margin-top:40px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    text-align:center;
+  }
+
+  [contenteditable="true"]{ outline:none; }
+  [contenteditable="true"]:hover{ background:rgba(176,141,62,0.08); border-radius:2px; }
+  [contenteditable="true"]:focus{ background:rgba(176,141,62,0.14); border-radius:2px; }
+
+  @media (max-width:520px){
+    body{ padding:36px 14px 60px; }
+    .timeline{ padding-left:44px; }
+    .timeline::before{ left:15px; }
+    .step-num{ left:-44px; width:32px; height:32px; font-size:14px; }
+    .step-card{ padding:14px 16px 16px; }
+    .step-title{ font-size:17px; }
+  }
+
+  @media (prefers-reduced-motion: no-preference){
+    .step-card, .source, .destination{ transition:box-shadow .2s ease; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <p class="kicker">CIDU — CENTRO INTERDIPARTIMENTALE PER L'UMANISTICA DIGITALE · UNICA</p>
+    <h1 contenteditable="true">Il flusso di lavoro della digitalizzazione dell'Almanacco</h1>
+    <p class="subtitle" contenteditable="true">Dagli originali cartacei alla galleria consultabile online: le fasi con cui i volumi sono stati scansionati, catalogati, resi persistenti su Zenodo e pubblicati sul portale del centro.</p>
+    <span class="edit-hint">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      testo modificabile: clicca su qualsiasi riquadro per editarlo
+    </span>
+  </header>
+
+  <!-- SOURCE -->
+  <div class="source">
+    <span class="icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V6a2 2 0 0 1 2-2h9l5 5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M14 4v5h5"/></svg>
+    </span>
+    <div>
+      <h2 contenteditable="true">Punto di partenza — gli originali cartacei</h2>
+      <p contenteditable="true">Volumi originali dell'Almanacco messi a disposizione dall'Ordine dei Giornalisti e dai pubblicisti: il punto di partenza del flusso, e frutto di un percorso di public engagement.</p>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="timeline">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-card">
+        <p class="step-tag">ACQUISIZIONE</p>
+        <h3 class="step-title" contenteditable="true">Digitalizzazione con lo Scan Robot</h3>
+        <p class="step-desc" contenteditable="true">Gli originali vengono scansionati con lo Scan Robot, uno scanner ad alta precisione capace di digitalizzare fino a 2.500 fogli in un'ora.</p>
+        <p class="step-desc" contenteditable="true">Il risultato è una copia digitale in formato OCR: non una semplice immagine, ma un PDF in cui ogni parola è ricercabile.</p>
+        <div class="chips">
+          <span class="chip gold">Output: PDF con OCR</span>
+          <span class="chip">Fino a 2.500 fogli/ora</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-card">
+        <p class="step-tag">METADATAZIONE</p>
+        <h3 class="step-title" contenteditable="true">Elaborazione di PDF e copertine</h3>
+        <p class="step-desc" contenteditable="true">I PDF, insieme alle copertine della rivista, vengono processati attraverso un sistema di metadatazione: editore, curatore di ogni volume (Associazione della Stampa Sarda) e indici di ciascun numero.</p>
+        <div class="chips">
+          <span class="chip">Editore</span>
+          <span class="chip">Curatore</span>
+          <span class="chip">Indici del numero</span>
+          <span class="chip">Copertina</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- context note -->
+    <div class="step context-note">
+      <div class="step-num" style="border-style:dashed;">i</div>
+      <div class="step-card">
+        <p class="step-tag">CONTESTO</p>
+        <p class="step-desc" contenteditable="true">Questo passaggio è anche l'esito di un percorso di public engagement e public history: una storia costruita insieme a uno dei suoi pubblici, quello dei giornalisti e dei pubblicisti.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-card">
+        <p class="step-tag">DEPOSITO E IDENTITÀ PERSISTENTE</p>
+        <h3 class="step-title" contenteditable="true">Caricamento su Zenodo (spazio CIDU)</h3>
+        <p class="step-desc" contenteditable="true">I numeri digitalizzati (circa quaranta) vengono caricati sullo spazio Zenodo del CIDU, il Centro Interdipartimentale per l'Umanistica Digitale.</p>
+        <p class="step-desc" contenteditable="true">A ciascun numero viene assegnato un DOI: un identificativo unico che garantisce un'identità persistente sul web, con relativa copertina e metadati visibili in ogni scheda.</p>
+        <div class="chips">
+          <span class="chip rust">DOI per ogni numero</span>
+          <span class="chip">~40 numeri</span>
+          <span class="chip">Scaricabile</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-card">
+        <p class="step-tag">RICHIAMO DATI</p>
+        <h3 class="step-title" contenteditable="true">Applicativo computazionale dedicato</h3>
+        <p class="step-desc" contenteditable="true">Un sistema sviluppato appositamente richiama i dati depositati su Zenodo per pubblicarli sulla piattaforma del centro.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-card">
+        <p class="step-tag">PUBBLICAZIONE</p>
+        <h3 class="step-title" contenteditable="true">Galleria consultabile con motore di ricerca</h3>
+        <p class="step-desc" contenteditable="true">I dati vengono pubblicati in forma di galleria, per rendere agevole la lettura e la ricerca di ogni volume: un motore di ricerca consente di filtrare per anno, nome e altri metadati.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DESTINATION -->
+  <div class="destination">
+    <span class="icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9.5 12 4l9 5.5"/><path d="M5 10v9h14v-9"/><path d="M9 19v-6h6v6"/></svg>
+    </span>
+    <div>
+      <h2 contenteditable="true">Portale del CIDU Unica</h2>
+      <p contenteditable="true">La galleria è inserita all'interno del portale costruito dal centro, che raccoglie anche i contenuti su Carlo Figari, riformattati secondo lo standard del CIDU.</p>
+    </div>
+  </div>
+
+  <!-- CLOSING METHOD NOTE -->
+  <div class="method-note">
+    <div class="bar"></div>
+    <div>
+      <h3 contenteditable="true">Una nota di metodo</h3>
+      <p contenteditable="true">Il flusso è coordinato interamente dall'autore ed è tanto un esito della sperimentazione in digital humanities quanto il frutto di un percorso di public engagement e public history, condiviso con uno dei pubblici a cui l'Almanacco è rivolto: quello dei giornalisti e dei pubblicisti che hanno reso disponibili gli originali.</p>
+    </div>
+  </div>
+
+  <footer>SCHEMA MODIFICABILE — CLICCA SUL TESTO PER EDITARE, POI ESPORTA O INCORPORA CON &lt;IFRAME&gt;</footer>
+
+</div>
+
+</body>
+</html>
