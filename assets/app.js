@@ -63,6 +63,26 @@ function numberValue(value, fallback = null) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function chronologicalYear(issue) {
+  const direct = Number(issue?.year);
+  if (Number.isFinite(direct) && direct >= 1900 && direct <= 2100) return direct;
+  const match = String(issue?.yearLabel || issue?.title || issue?.id || "").match(/(?:19|20)\d{2}/);
+  return match ? Number(match[0]) : Number.MAX_SAFE_INTEGER;
+}
+
+function sortChronologically(issues) {
+  return [...issues].sort((a, b) =>
+    chronologicalYear(a) - chronologicalYear(b) ||
+    numberValue(a.volume, Number.MAX_SAFE_INTEGER) - numberValue(b.volume, Number.MAX_SAFE_INTEGER) ||
+    String(a.id || "").localeCompare(String(b.id || ""), "it", { numeric: true })
+  );
+}
+
+function parsedYear(value, fallback, ...hints) {
+  const match = [value, ...hints].map(item => String(item || "")).join(" ").match(/(?:19|20)\d{2}/);
+  return match ? Number(match[0]) : chronologicalYear({ year: fallback });
+}
+
 function mapCsvIssues(csvText, localIssues) {
   const rows = parseCsv(csvText);
   const headerIndex = rows.findIndex(row => row.some(cell => cell.replace(/^\uFEFF/, "").trim() === "ID numero"));
@@ -75,7 +95,7 @@ function mapCsvIssues(csvText, localIssues) {
     const id = record["ID numero"];
     if (!id) continue;
     const local = localById.get(id) || {};
-    const year = numberValue(record["Anno"], local.year || 0);
+    const year = parsedYear(record["Anno"], local.year, record["Titolo"], id, local.yearLabel);
     const title = record["Titolo"] || local.title || `Almanacco della Sardegna ${year}`;
     const labelMatch = title.match(/\b(?:19|20)\d{2}(?:[\/–-](?:19|20)?\d{2})?/);
     const yearLabel = labelMatch ? labelMatch[0].replace(/[–-]/g, "/") : (local.yearLabel || String(year));
@@ -102,7 +122,7 @@ function mapCsvIssues(csvText, localIssues) {
     });
   }
   if (!mapped.length) throw new Error("Il CSV non contiene numeri pubblicabili");
-  return mapped.sort((a, b) => a.sortOrder - b.sortOrder || (a.volume || 0) - (b.volume || 0));
+  return sortChronologically(mapped);
 }
 
 async function fetchText(url) {
@@ -120,16 +140,16 @@ async function loadCatalog() {
     const csv = await fetchText(config.csvUrl);
     source.textContent = "Dati aggiornati da Google Drive";
     source.classList.add("is-live");
-    return mapCsvIssues(csv, local.issues);
+    return sortChronologically(mapCsvIssues(csv, local.issues));
   } catch (remoteError) {
     try {
       const csv = await fetchText(config.csvFallback || "data/numeri.csv");
       source.textContent = "Copia sincronizzata da Google Drive";
       source.title = remoteError.message;
-      return mapCsvIssues(csv, local.issues);
+      return sortChronologically(mapCsvIssues(csv, local.issues));
     } catch {
       source.textContent = "Catalogo locale";
-      return local.issues;
+      return sortChronologically(local.issues);
     }
   }
 }
@@ -190,14 +210,19 @@ function setPdfButton(result) {
 }
 
 function buildDecades() {
-  const decades = [...new Set(state.issues.map(x => x.decade))];
+  const decades = [...new Set(state.issues.map(x => Math.floor(chronologicalYear(x) / 10) * 10))]
+    .filter(decade => Number.isFinite(decade) && decade >= 1900 && decade <= 2100)
+    .sort((a, b) => a - b);
   const items = [["all", "Tutte"], ...decades.map(d => [String(d), `Anni ${String(d).slice(2)}`])];
   $("#decades").innerHTML = items.map(([value, label]) => `<button type="button" data-decade="${value}" aria-pressed="${state.decade === value}">${label}</button>`).join("");
 }
 
 function visibleIssues() {
   const q = state.query.trim().toLocaleLowerCase("it");
-  return state.issues.filter(issue => (state.decade === "all" || String(issue.decade) === state.decade) && (!q || searchable(issue).includes(q)));
+  return sortChronologically(state.issues.filter(issue => {
+    const decade = Math.floor(chronologicalYear(issue) / 10) * 10;
+    return (state.decade === "all" || String(decade) === state.decade) && (!q || searchable(issue).includes(q));
+  }));
 }
 
 function render() {
