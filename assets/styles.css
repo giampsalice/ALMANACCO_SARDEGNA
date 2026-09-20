@@ -2,7 +2,8 @@
   --ink: #17211f;
   --forest: #183c35;
   --forest-2: #24574b;
-  --paper: #f4f0e7;
+  --gallery-bg: #f4f0e7;
+  --paper: var(--gallery-bg);
   --paper-2: #e9e1d2;
   --gold: #c69a45;
   --red: #9c3f32;
@@ -17,9 +18,10 @@ html { scroll-behavior: smooth; }
 body {
   margin: 0;
   color: var(--ink);
+  background-color: var(--gallery-bg);
   background:
     radial-gradient(circle at 12% 3%, rgba(198, 154, 69, .14), transparent 24rem),
-    linear-gradient(180deg, #f8f5ee 0, var(--paper) 36rem);
+    linear-gradient(180deg, color-mix(in srgb, var(--gallery-bg), white 35%) 0, var(--gallery-bg) 36rem);
   font-family: var(--sans);
   min-height: 100vh;
 }
@@ -53,7 +55,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .catalog__meta { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2rem; border-bottom: 1px solid var(--line); padding-bottom: 1rem; }
 .catalog__meta h2 { font: 400 clamp(2rem, 4vw, 3.5rem)/1 var(--serif); margin: 0; }
 .catalog__meta p { color: #59625f; }
-.grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: clamp(1rem, 2.5vw, 2.2rem); }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 185px), 1fr)); gap: clamp(1rem, 2.5vw, 2.2rem); }
 .issue-card { min-width: 0; }
 .issue-card__button { width: 100%; border: 0; padding: 0; text-align: left; background: none; cursor: pointer; color: inherit; }
 .cover, .modal-cover { position: relative; overflow: hidden; background: var(--cover-bg); color: var(--cover-fg, #fff); box-shadow: 0 16px 34px rgba(26,36,32,.13); }
@@ -107,7 +109,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .toast.is-visible { transform: translate(-50%, 0); }
 
 @media (max-width: 900px) {
-  .grid { grid-template-columns: repeat(3, 1fr); }
   .controls { align-items: stretch; flex-direction: column; }
   .search { min-width: 100%; }
   .data-source { align-self: flex-end; }
@@ -116,7 +117,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
 @media (max-width: 650px) {
   .hero { padding-top: 3.5rem; }
   .hero h1 span { padding-left: 0; }
-  .grid { grid-template-columns: repeat(2, 1fr); }
   .issue-card__title { font-size: 1.12rem; }
   .volume-dialog { width: calc(100% - 1rem); height: calc(100dvh - 1rem); max-height: calc(100dvh - 1rem); }
   .volume { height: 100%; min-height: 0; }

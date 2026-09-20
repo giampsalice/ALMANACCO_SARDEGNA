@@ -10,6 +10,14 @@ const volumeCard = $("#volume-card");
 const config = window.ALMANACCO_CONFIG || {};
 const zenodoCache = new Map();
 
+function applyAppearance() {
+  const params = new URLSearchParams(location.search);
+  const requested = params.get("bg") || config.backgroundColor || "#f4f0e7";
+  const probe = document.createElement("span");
+  probe.style.color = requested;
+  if (probe.style.color) document.documentElement.style.setProperty("--gallery-bg", requested);
+}
+
 function issuePalette(issue) {
   const index = Math.abs(Number(issue.volume || issue.year)) % palette.length;
   return palette[index];
@@ -258,7 +266,10 @@ function showToast(message) {
 }
 
 function notifyHeight() {
-  if (window.parent !== window) requestAnimationFrame(() => window.parent.postMessage({ type: "almanacco:height", height: document.documentElement.scrollHeight }, "*"));
+  if (window.parent !== window) requestAnimationFrame(() => {
+    const height = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    window.parent.postMessage({ type: "almanacco:height", height }, "*");
+  });
 }
 
 document.addEventListener("click", event => {
@@ -272,6 +283,11 @@ dialog.addEventListener("cancel", event => { event.preventDefault(); closeDialog
 $("#search").addEventListener("input", event => { state.query = event.target.value; render(); });
 $("#reset").addEventListener("click", () => { state.decade = "all"; state.query = ""; $("#search").value = ""; render(); });
 window.addEventListener("resize", notifyHeight);
+window.addEventListener("load", notifyHeight);
+if ("ResizeObserver" in window) new ResizeObserver(notifyHeight).observe(document.body);
+document.addEventListener("load", notifyHeight, true);
+
+applyAppearance();
 
 loadCatalog()
   .then(issues => {
