@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#183c35">
+  <title>Archivio Almanacco della Sardegna</title>
+  <meta name="description" content="Sfoglia l’archivio digitale dell’Almanacco della Sardegna per decennio e consulta gli indici dei volumi.">
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    /* Visualizzatore PDF interno, coordinato con la galleria delle guide. */
+    .pdf-reader{width:min(1100px,94vw);height:min(90vh,900px);padding:0;border:0;border-radius:18px;background:#454b4f;color:#fff;box-shadow:0 28px 80px #0008;overflow:hidden}
+    .pdf-reader::backdrop{background:#11181bd9;backdrop-filter:blur(3px)}
+    .pdf-reader__bar{min-height:54px;padding:0 12px 0 16px;background:#15191c;display:flex;align-items:center;gap:10px;border-bottom:1px solid #ffffff12}
+    .pdf-reader__title{font:700 15px/1.3 system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-right:auto}
+    .pdf-reader__status{font:500 14px/1.2 system-ui,sans-serif;color:#e7edf0;white-space:nowrap}
+    .pdf-reader__controls{display:flex;align-items:center;gap:7px}
+    .pdf-reader__button{min-width:34px;height:34px;padding:0 10px;border:1px solid #667079;border-radius:7px;background:#2c3439;color:#fff;font:500 14px system-ui,sans-serif;cursor:pointer}
+    .pdf-reader__button:hover,.pdf-reader__button:focus-visible{background:#3d484f;border-color:#8d9aa3;outline:none}
+    .pdf-reader__button:disabled{opacity:.4;cursor:default}
+    .pdf-reader__stage{height:calc(100% - 55px);overflow:auto;display:grid;place-items:start center;padding:28px;background:#454b4f}
+    .pdf-reader__canvas{display:block;max-width:none;background:#fff;box-shadow:0 8px 28px #0007}
+    .pdf-reader__message{align-self:center;max-width:560px;padding:20px 24px;border-radius:10px;background:#fff;color:#202124;text-align:center;font:15px/1.45 system-ui,sans-serif}
+    .pdf-reader__message strong{display:block;margin-bottom:7px}
+    @media(max-width:720px){.pdf-reader{width:100vw;height:100dvh;max-width:none;max-height:none;border-radius:0}.pdf-reader__bar{padding:7px 8px;flex-wrap:wrap}.pdf-reader__title{width:100%;order:-1}.pdf-reader__stage{height:calc(100% - 92px);padding:14px}.pdf-reader__status{font-size:12px}.pdf-reader__button{padding:0 8px}}
+  </style>
+  <script src="assets/config.js?v=20260920-2" defer></script>
+  <script src="assets/app.js?v=20260920-2" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#catalogo">Vai al catalogo</a>
+  <main>
+    <header class="hero">
+      <div class="hero__eyebrow">Archivio digitale</div>
+      <h1>Almanacco<br><span>della Sardegna</span></h1>
+      <p>Quarant’anni di storia, cultura e giornalismo sardo. Scegli un decennio oppure cerca un autore o un contributo.</p>
+      <div class="hero__rule" aria-hidden="true"><span></span></div>
+    </header>
+
+    <section class="controls" aria-label="Filtri del catalogo">
+      <div class="decades" id="decades" role="group" aria-label="Filtra per decennio"></div>
+      <label class="search">
+        <span class="sr-only">Cerca nel catalogo</span>
+        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg>
+        <input id="search" type="search" placeholder="Cerca titolo, autore, argomento…" autocomplete="off">
+      </label>
+      <div class="data-source" id="data-source" aria-live="polite">Caricamento dati…</div>
+    </section>
+
+    <section class="catalog" id="catalogo" aria-live="polite" aria-busy="true">
+      <div class="catalog__meta">
+        <h2 id="catalog-title">Tutti i numeri</h2>
+        <p id="result-count"></p>
+      </div>
+      <div class="grid" id="grid"></div>
+      <div class="empty" id="empty" hidden>
+        <p>Nessun numero corrisponde alla ricerca.</p>
+        <button type="button" id="reset">Azzera i filtri</button>
+      </div>
+    </section>
+  </main>
+
+  <dialog class="volume-dialog" id="volume-dialog" aria-labelledby="dialog-title">
+    <button class="dialog-close" type="button" data-close aria-label="Chiudi il dettaglio">×</button>
+    <div class="volume" id="volume-card">
+      <section class="volume__front" aria-label="Copertina del numero">
+        <div class="modal-cover" id="modal-cover"></div>
+        <div class="front-copy">
+          <p class="kicker" id="dialog-volume"></p>
+          <h2 id="dialog-title"></h2>
+          <p id="dialog-meta"></p>
+          <button class="flip-button" type="button" data-flip>
+            <span>Scopri i contenuti</span><span aria-hidden="true">→</span>
+          </button>
+        </div>
+      </section>
+      <section class="volume__back" aria-label="Indice del volume">
+        <div class="back-head">
+          <div>
+            <p class="kicker">Indice del volume</p>
+            <h2 id="back-title"></h2>
+          </div>
+          <button class="flip-button flip-button--light" type="button" data-flip aria-label="Torna alla copertina">← Copertina</button>
+        </div>
+        <div class="contents" id="dialog-contents"></div>
+        <div class="pdf-panel">
+          <div>
+            <strong>Consulta il numero completo</strong>
+            <span id="pdf-status">PDF non ancora disponibile</span>
+          </div>
+          <a class="pdf-button" id="pdf-link" href="#" target="_blank" rel="noopener">Apri il PDF <span aria-hidden="true">↗</span></a>
+        </div>
+      </section>
+    </div>
+  </dialog>
+
+  <dialog class="pdf-reader" id="pdf-reader" aria-labelledby="pdf-reader-title">
+    <div class="pdf-reader__bar">
+      <strong class="pdf-reader__title" id="pdf-reader-title">Lettura PDF</strong>
+      <span class="pdf-reader__status" id="pdf-reader-status">Pagina 1 / 1</span>
+      <div class="pdf-reader__controls" aria-label="Controlli del PDF">
+        <button class="pdf-reader__button" id="pdf-prev" type="button" aria-label="Pagina precedente">←</button>
+        <button class="pdf-reader__button" id="pdf-next" type="button" aria-label="Pagina successiva">→</button>
+        <button class="pdf-reader__button" id="pdf-zoom-out" type="button" aria-label="Riduci">−</button>
+        <button class="pdf-reader__button" id="pdf-zoom-in" type="button" aria-label="Ingrandisci">+</button>
+        <button class="pdf-reader__button" id="pdf-fit" type="button">Adatta</button>
+        <button class="pdf-reader__button" id="pdf-close" type="button" aria-label="Chiudi">×</button>
+      </div>
+    </div>
+    <div class="pdf-reader__stage" id="pdf-reader-stage">
+      <canvas class="pdf-reader__canvas" id="pdf-canvas"></canvas>
+    </div>
+  </dialog>
+
+  <template id="card-template">
+    <article class="issue-card">
+      <button class="issue-card__button" type="button">
+        <div class="cover"></div>
+        <div class="issue-card__info">
+          <span class="issue-card__year"></span>
+          <h3 class="issue-card__title"></h3>
+          <span class="issue-card__action">Apri il numero <span aria-hidden="true">↗</span></span>
+        </div>
+      </button>
+    </article>
+  </template>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module">
+    import * as pdfjsLib from "https://cdn.jsdelivr.net/npm/pdfjs-dist@latest/build/pdf.min.mjs";
+    pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@latest/build/pdf.worker.min.mjs";
+
+    const reader=document.getElementById("pdf-reader");
+    const stage=document.getElementById("pdf-reader-stage");
+    const canvas=document.getElementById("pdf-canvas");
+    const context=canvas.getContext("2d");
+    const title=document.getElementById("pdf-reader-title");
+    const status=document.getElementById("pdf-reader-status");
+    const prev=document.getElementById("pdf-prev");
+    const next=document.getElementById("pdf-next");
+    const zoomOut=document.getElementById("pdf-zoom-out");
+    const zoomIn=document.getElementById("pdf-zoom-in");
+    let documentPdf=null,pageNumber=1,scale=1.2,fitWidth=true,renderTask=null;
+
+    function directPdfUrl(value){
+      try{
+        const u=new URL(value,location.href);
+        if(u.protocol==="http:"&&u.hostname.toLowerCase().endsWith(".github.io"))u.protocol="https:";
+        if(u.hostname.toLowerCase()==="github.com"){
+          const parts=u.pathname.split("/").filter(Boolean),marker=parts.indexOf("blob");
+          if(marker===2&&parts.length>4){
+            const [owner,repo]=parts;
+            const rest=parts.slice(marker+1).map(decodeURIComponent).map(encodeURIComponent).join("/");
+            return `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${rest}`;
+          }
+        }
+        return u.href;
+      }catch{return "";}
+    }
+
+    function message(heading,text){
+      stage.innerHTML=`<div class="pdf-reader__message"><strong>${heading}</strong>${text}</div>`;
+    }
+
+    async function renderPage(){
+      if(!documentPdf)return;
+      if(renderTask){try{renderTask.cancel();}catch{}}
+      const page=await documentPdf.getPage(pageNumber);
+      let useScale=scale;
+      if(fitWidth){
+        const base=page.getViewport({scale:1});
+        useScale=Math.max(.25,(stage.clientWidth-56)/base.width);
+      }
+      const viewport=page.getViewport({scale:useScale});
+      const ratio=window.devicePixelRatio||1;
+      canvas.width=Math.floor(viewport.width*ratio);canvas.height=Math.floor(viewport.height*ratio);
+      canvas.style.width=`${Math.floor(viewport.width)}px`;canvas.style.height=`${Math.floor(viewport.height)}px`;
+      renderTask=page.render({canvasContext:context,viewport,transform:ratio!==1?[ratio,0,0,ratio,0,0]:null});
+      await renderTask.promise;
+      status.textContent=`Pagina ${pageNumber} / ${documentPdf.numPages}`;
+      prev.disabled=pageNumber<=1;next.disabled=pageNumber>=documentPdf.numPages;
+    }
+
+    async function openPdf(url,label){
+      const direct=directPdfUrl(url);
+      if(!direct)return;
+      title.textContent=label||"Lettura PDF";status.textContent="Caricamento…";
+      if(stage.querySelector(".pdf-reader__message"))stage.innerHTML="";
+      stage.appendChild(canvas);canvas.hidden=true;
+      if(!reader.open)reader.showModal();
+      try{
+        documentPdf=await pdfjsLib.getDocument({url:direct}).promise;
+        pageNumber=1;fitWidth=true;canvas.hidden=false;await renderPage();
+      }catch(error){
+        console.error(error);documentPdf=null;
+        message("Il PDF non può essere visualizzato","Controlla che l’indirizzo punti direttamente a un PDF pubblico ospitato su GitHub Pages o su un server che consenta l’accesso CORS.");
+        status.textContent="Errore di caricamento";
+      }
+    }
+
+    document.addEventListener("click",event=>{
+      const link=event.target.closest("#pdf-link");
+      if(!link||link.hidden||link.getAttribute("aria-disabled")==="true")return;
+      const href=link.getAttribute("href");
+      if(!href||href==="#")return;
+      event.preventDefault();event.stopPropagation();
+      openPdf(href,document.getElementById("dialog-title")?.textContent||"Almanacco della Sardegna");
+    },true);
+    prev.addEventListener("click",()=>{if(pageNumber>1){pageNumber--;renderPage();}});
+    next.addEventListener("click",()=>{if(documentPdf&&pageNumber<documentPdf.numPages){pageNumber++;renderPage();}});
+    zoomOut.addEventListener("click",()=>{scale=Math.max(.4,(fitWidth?1:scale)-.2);fitWidth=false;renderPage();});
+    zoomIn.addEventListener("click",()=>{scale=Math.min(4,(fitWidth?1:scale)+.2);fitWidth=false;renderPage();});
+    document.getElementById("pdf-fit").addEventListener("click",()=>{fitWidth=true;renderPage();});
+    document.getElementById("pdf-close").addEventListener("click",()=>reader.close());
+    reader.addEventListener("click",event=>{if(event.target===reader)reader.close();});
+    window.addEventListener("resize",()=>{if(reader.open&&fitWidth)renderPage();});
+  </script>
+</body>
+</html>
