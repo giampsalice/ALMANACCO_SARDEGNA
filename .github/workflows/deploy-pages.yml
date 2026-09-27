@@ -42,7 +42,7 @@ jobs:
       - name: Prepara i file da pubblicare
         run: |
           mkdir -p _site
-          cp -R index.html assets data _site/
+          cp -R index.html assets data pdf _site/
           touch _site/.nojekyll
 
       - name: Carica il sito
