@@ -8,6 +8,7 @@ const grid = $("#grid");
 const dialog = $("#volume-dialog");
 const volumeCard = $("#volume-card");
 const config = window.ALMANACCO_CONFIG || {};
+const zenodoLookupCache = new Map();
 
 function applyAppearance() {
   const params = new URLSearchParams(location.search);
@@ -179,6 +180,31 @@ function zenodoRecordUrl(value = "", issue = {}) {
   return { url: `https://zenodo.org/search?q=${encodeURIComponent(query)}`, direct: false };
 }
 
+async function findZenodoRecord(issue) {
+  const year = String(chronologicalYear(issue));
+  if (zenodoLookupCache.has(year)) return zenodoLookupCache.get(year);
+  const fallback = zenodoRecordUrl("", issue);
+  const lookup = (async () => {
+    try {
+      const query = `Almanacco_Sardegna_${year}`;
+      const response = await fetch(`https://zenodo.org/api/records?q=${encodeURIComponent(query)}&size=20`, { cache: "force-cache" });
+      if (!response.ok) throw new Error(`Zenodo HTTP ${response.status}`);
+      const payload = await response.json();
+      const records = payload?.hits?.hits || [];
+      const record = records.find(item => {
+        const title = item?.metadata?.title || "";
+        const files = (item?.files || []).map(file => file.key || file.filename || "").join(" ");
+        return `${title} ${files}`.includes(year);
+      });
+      return record?.id ? { url: `https://zenodo.org/records/${record.id}`, direct: true } : fallback;
+    } catch {
+      return fallback;
+    }
+  })();
+  zenodoLookupCache.set(year, lookup);
+  return lookup;
+}
+
 function setDocumentButtons(issue) {
   const pdf = $("#pdf-link");
   const available = Boolean(issue.pdfUrl);
@@ -196,6 +222,17 @@ function setDocumentButtons(issue) {
   zenodo.innerHTML = zenodoTarget.direct
     ? `Copia ufficiale su Zenodo <span aria-hidden="true">↗</span>`
     : `Cerca su Zenodo <span aria-hidden="true">↗</span>`;
+  if (!zenodoTarget.direct) {
+    zenodo.textContent = "Ricerca della copia su Zenodo…";
+    const activeId = issue.id;
+    findZenodoRecord(issue).then(result => {
+      if (state.active?.id !== activeId) return;
+      zenodo.href = result.url;
+      zenodo.innerHTML = result.direct
+        ? `Copia ufficiale su Zenodo <span aria-hidden="true">↗</span>`
+        : `Cerca su Zenodo <span aria-hidden="true">↗</span>`;
+    });
+  }
 }
 
 function buildDecades() {
