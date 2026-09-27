@@ -1,6 +1,6 @@
 # Galleria Almanacco della Sardegna
 
-Applicazione statica per consultare i numeri dell’Almanacco della Sardegna, filtrare il catalogo per decennio e aprire una scheda fronte-retro con copertina, indice e collegamento al PDF.
+Applicazione statica per consultare i numeri dell’Almanacco della Sardegna, filtrare il catalogo per decennio e aprire una scheda fronte-retro con copertina, indice e lettore PDF integrato.
 
 I dati principali vengono letti dal CSV pubblico di Google Drive configurato in `assets/config.js`. Gli indici dettagliati sono uniti al catalogo JSON generato dal file Excel.
 
@@ -29,7 +29,7 @@ Il CSV deve contenere una riga con l’intestazione `ID numero` e le stesse colo
 
 Il file sorgente si trova in `source/Archivio_Almanacco_Sardegna_WordPress.xlsx`.
 
-1. Compila nel foglio Google le colonne `URL download numero` e `URL immagine copertina`.
+1. Compila nel foglio Google le colonne `URL download numero` e `URL immagine copertina`. In `URL download numero` puoi inserire l’URL del file, del record Zenodo oppure il DOI: il sito lo trasforma nel pulsante **Copia ufficiale su Zenodo**.
 2. Le modifiche diventano disponibili direttamente dal CSV pubblico; la copia ospitata su GitHub viene aggiornata entro un’ora.
 3. Quando cambiano gli indici annuali, sostituisci anche il file Excel nella cartella `source` e crea un commit.
 
@@ -55,6 +55,8 @@ Se WordPress rimuove il tag `script`, usa soltanto l’iframe e assegna un’alt
 - `assets/styles.css`: impaginazione responsive e grafica.
 - `assets/config.js`: collegamento al CSV pubblico.
 - `assets/app.js`: filtri, ricerca, popup e collegamenti PDF.
+- `assets/pdf-reader.js`: visualizzatore PDF interno basato su PDF.js.
+- `pdf/`: copie PDF lette direttamente da GitHub Pages.
 - `data/almanacco.json`: catalogo generato dal foglio Excel.
 - `data/numeri.csv`: copia di sicurezza del CSV pubblico.
 - `scripts/export_xlsx.py`: convertitore Excel → JSON.
@@ -63,4 +65,6 @@ Se WordPress rimuove il tag `script`, usa soltanto l’iframe e assegna un’alt
 
 ## Comportamento degli URL mancanti
 
-Quando l’immagine non è disponibile, l’app genera una copertina tipografica coerente con il decennio. Quando manca il PDF, il pulsante resta disabilitato e comunica che il documento non è ancora disponibile. Non appena gli URL vengono aggiunti al foglio, la pubblicazione successiva li attiva automaticamente.
+Quando l’immagine non è disponibile, l’app genera una copertina tipografica coerente con il decennio. L’associazione tra anno e file locale è definita in `assets/config.js`, nella proprietà `pdfFiles`. Se manca il PDF locale, il pulsante di lettura resta disabilitato. Il pulsante Zenodo appare solo quando nel CSV è presente un collegamento riconosciuto.
+
+Il lettore nasconde i normali comandi di download e stampa, ma un PDF pubblicato sul Web non può essere reso tecnicamente impossibile da salvare da parte di un utente esperto.
