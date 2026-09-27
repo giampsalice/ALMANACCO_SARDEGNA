@@ -13,6 +13,7 @@ const next = document.getElementById("pdf-next");
 const zoomOut = document.getElementById("pdf-zoom-out");
 const zoomIn = document.getElementById("pdf-zoom-in");
 const fit = document.getElementById("pdf-fit");
+const fullscreen = document.getElementById("pdf-fullscreen");
 let documentPdf = null;
 let renderTask = null;
 let pageNumber = 1;
@@ -91,11 +92,35 @@ next.addEventListener("click", () => { if (documentPdf && pageNumber < documentP
 zoomOut.addEventListener("click", () => { scale = Math.max(.4, (fitWidth ? 1 : scale) - .2); fitWidth = false; renderPage(); });
 zoomIn.addEventListener("click", () => { scale = Math.min(4, (fitWidth ? 1 : scale) + .2); fitWidth = false; renderPage(); });
 fit.addEventListener("click", () => { fitWidth = true; renderPage(); });
-document.getElementById("pdf-fullscreen").addEventListener("click", () => {
-  if (document.fullscreenElement) document.exitFullscreen();
-  else reader.requestFullscreen?.();
+fullscreen.addEventListener("click", async () => {
+  if (document.fullscreenElement) {
+    await document.exitFullscreen();
+    reader.classList.remove("is-expanded");
+    return;
+  }
+  if (reader.classList.contains("is-expanded")) {
+    reader.classList.remove("is-expanded");
+    fullscreen.setAttribute("aria-label", "Schermo intero");
+    return;
+  }
+  reader.classList.add("is-expanded");
+  fullscreen.setAttribute("aria-label", "Riduci il lettore");
+  try { await reader.requestFullscreen?.(); } catch {}
+  if (fitWidth) renderPage();
 });
 document.getElementById("pdf-close").addEventListener("click", () => reader.close());
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement) {
+    reader.classList.remove("is-expanded");
+    fullscreen.setAttribute("aria-label", "Schermo intero");
+  }
+});
 reader.addEventListener("click", event => { if (event.target === reader) reader.close(); });
-reader.addEventListener("close", () => { renderTask?.cancel(); documentPdf?.destroy(); documentPdf = null; });
+reader.addEventListener("close", () => {
+  renderTask?.cancel();
+  documentPdf?.destroy();
+  documentPdf = null;
+  reader.classList.remove("is-expanded");
+  fullscreen.setAttribute("aria-label", "Schermo intero");
+});
 window.addEventListener("resize", () => { if (reader.open && fitWidth) renderPage(); });

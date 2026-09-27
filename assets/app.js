@@ -169,12 +169,14 @@ function directPdf(value = "") {
   return /^https?:\/\/.*\.pdf(?:[?#].*)?$/i.test(input) ? input : null;
 }
 
-function zenodoRecordUrl(value = "") {
+function zenodoRecordUrl(value = "", issue = {}) {
   const input = String(value).trim();
   const recordId = zenodoRecordId(input);
-  if (recordId) return `https://zenodo.org/records/${recordId}`;
-  if (/^10\.\d{4,9}\//i.test(input)) return `https://doi.org/${input}`;
-  return /^https?:\/\//i.test(input) ? input : "";
+  if (recordId) return { url: `https://zenodo.org/records/${recordId}`, direct: true };
+  if (/^10\.\d{4,9}\//i.test(input)) return { url: `https://doi.org/${input}`, direct: true };
+  if (/^https?:\/\//i.test(input)) return { url: input, direct: true };
+  const query = `Almanacco della Sardegna ${issue.yearLabel || issue.year || ""}`.trim();
+  return { url: `https://zenodo.org/search?q=${encodeURIComponent(query)}`, direct: false };
 }
 
 function setDocumentButtons(issue) {
@@ -188,9 +190,12 @@ function setDocumentButtons(issue) {
     showToast("Il PDF locale non è ancora associato a questo numero.");
   };
   const zenodo = $("#zenodo-link");
-  const recordUrl = zenodoRecordUrl(issue.zenodoUrl);
-  zenodo.href = recordUrl || "#";
-  zenodo.hidden = !recordUrl;
+  const zenodoTarget = zenodoRecordUrl(issue.zenodoUrl, issue);
+  zenodo.href = zenodoTarget.url;
+  zenodo.hidden = false;
+  zenodo.innerHTML = zenodoTarget.direct
+    ? `Copia ufficiale su Zenodo <span aria-hidden="true">↗</span>`
+    : `Cerca su Zenodo <span aria-hidden="true">↗</span>`;
 }
 
 function buildDecades() {

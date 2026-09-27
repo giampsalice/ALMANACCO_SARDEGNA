@@ -108,6 +108,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .pdf-button--secondary { color: #fff; background: transparent; border: 1px solid rgba(255,255,255,.48); }
 .pdf-button[aria-disabled="true"] { opacity: .38; pointer-events: none; }
 .pdf-reader { width: min(1180px, 96vw); height: min(94vh, 980px); max-width: none; max-height: none; padding: 0; border: 0; border-radius: 16px; color: #fff; background: #454b4f; box-shadow: 0 28px 80px rgba(0,0,0,.52); overflow: hidden; }
+.pdf-reader.is-expanded { width: 100vw; height: 100dvh; border-radius: 0; }
 .pdf-reader::backdrop { background: rgba(12,18,20,.88); backdrop-filter: blur(4px); }
 .pdf-reader__bar { min-height: 56px; padding: 0 12px 0 18px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,.08); background: #15191c; }
 .pdf-reader__title { margin-right: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .92rem; }
