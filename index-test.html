@@ -21,6 +21,7 @@
     .pdf-reader__button:disabled{opacity:.4;cursor:default}
     .pdf-reader__stage{height:calc(100% - 55px);overflow:auto;display:grid;place-items:start center;padding:28px;background:#454b4f}
     .pdf-reader__canvas{display:block;max-width:none;background:#fff;box-shadow:0 8px 28px #0007}
+    .pdf-reader__frame{display:block;width:100%;height:100%;border:0;background:#fff}
     .pdf-reader__message{align-self:center;max-width:560px;padding:20px 24px;border-radius:10px;background:#fff;color:#202124;text-align:center;font:15px/1.45 system-ui,sans-serif}
     .pdf-reader__message strong{display:block;margin-bottom:7px}
     @media(max-width:720px){.pdf-reader{width:100vw;height:100dvh;max-width:none;max-height:none;border-radius:0}.pdf-reader__bar{padding:7px 8px;flex-wrap:wrap}.pdf-reader__title{width:100%;order:-1}.pdf-reader__stage{height:calc(100% - 92px);padding:14px}.pdf-reader__status{font-size:12px}.pdf-reader__button{padding:0 8px}}
@@ -168,6 +169,17 @@
       stage.innerHTML=`<div class="pdf-reader__message"><strong>${heading}</strong>${text}</div>`;
     }
 
+    function zenodoFallback(url){
+      const frame=document.createElement("iframe");
+      frame.className="pdf-reader__frame";
+      frame.title=`Anteprima di ${title.textContent}`;
+      frame.src=`${url}#toolbar=0&navpanes=0&scrollbar=1&view=FitH`;
+      stage.innerHTML="";stage.style.padding="0";stage.appendChild(frame);
+      status.textContent="Anteprima Zenodo";
+      prev.disabled=true;next.disabled=true;zoomOut.disabled=true;zoomIn.disabled=true;
+      document.getElementById("pdf-fit").disabled=true;
+    }
+
     async function renderPage(){
       if(!documentPdf)return;
       if(renderTask){try{renderTask.cancel();}catch{}}
@@ -191,6 +203,9 @@
       const direct=directPdfUrl(url);
       if(!direct)return;
       title.textContent=label||"Lettura PDF";status.textContent="Caricamento…";
+      stage.style.padding="";
+      prev.disabled=false;next.disabled=false;zoomOut.disabled=false;zoomIn.disabled=false;
+      document.getElementById("pdf-fit").disabled=false;
       if(stage.querySelector(".pdf-reader__message"))stage.innerHTML="";
       stage.appendChild(canvas);canvas.hidden=true;
       if(!reader.open)reader.showModal();
@@ -199,6 +214,10 @@
         pageNumber=1;fitWidth=true;canvas.hidden=false;await renderPage();
       }catch(error){
         console.error(error);documentPdf=null;
+        if(new URL(direct).hostname.toLowerCase()==="zenodo.org"){
+          zenodoFallback(direct);
+          return;
+        }
         message("Il PDF non può essere visualizzato","Controlla che l’indirizzo punti direttamente a un PDF pubblico ospitato su GitHub Pages o su un server che consenta l’accesso CORS.");
         status.textContent="Errore di caricamento";
       }
