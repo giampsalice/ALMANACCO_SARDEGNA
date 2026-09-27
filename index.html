@@ -8,8 +8,9 @@
   <title>Archivio Almanacco della Sardegna</title>
   <meta name="description" content="Sfoglia l’archivio digitale dell’Almanacco della Sardegna per decennio e consulta gli indici dei volumi.">
   <link rel="stylesheet" href="assets/styles.css">
-  <script src="assets/config.js?v=20260920-2" defer></script>
-  <script src="assets/app.js?v=20260920-2" defer></script>
+  <script src="assets/config.js?v=20260927-1" defer></script>
+  <script src="assets/app.js?v=20260927-1" defer></script>
+  <script type="module" src="assets/pdf-reader.js?v=20260927-1"></script>
 </head>
 <body>
   <a class="skip-link" href="#catalogo">Vai al catalogo</a>
@@ -72,9 +73,31 @@
             <strong>Consulta il numero completo</strong>
             <span id="pdf-status">PDF non ancora disponibile</span>
           </div>
-          <a class="pdf-button" id="pdf-link" href="#" target="_blank" rel="noopener">Apri il PDF <span aria-hidden="true">↗</span></a>
+          <div class="pdf-actions">
+            <a class="pdf-button" id="pdf-link" href="#" aria-disabled="true">Leggi il PDF <span aria-hidden="true">▣</span></a>
+            <a class="pdf-button pdf-button--secondary" id="zenodo-link" href="#" target="_blank" rel="noopener" hidden>Copia ufficiale su Zenodo <span aria-hidden="true">↗</span></a>
+          </div>
         </div>
       </section>
+    </div>
+  </dialog>
+
+  <dialog class="pdf-reader" id="pdf-reader" aria-labelledby="pdf-reader-title">
+    <div class="pdf-reader__bar">
+      <strong class="pdf-reader__title" id="pdf-reader-title">Lettura PDF</strong>
+      <span class="pdf-reader__status" id="pdf-reader-status" aria-live="polite">Pagina 1 / 1</span>
+      <div class="pdf-reader__controls" aria-label="Controlli del PDF">
+        <button class="pdf-reader__button" id="pdf-prev" type="button" aria-label="Pagina precedente">←</button>
+        <button class="pdf-reader__button" id="pdf-next" type="button" aria-label="Pagina successiva">→</button>
+        <button class="pdf-reader__button" id="pdf-zoom-out" type="button" aria-label="Riduci">−</button>
+        <button class="pdf-reader__button" id="pdf-zoom-in" type="button" aria-label="Ingrandisci">+</button>
+        <button class="pdf-reader__button" id="pdf-fit" type="button">Adatta</button>
+        <button class="pdf-reader__button" id="pdf-fullscreen" type="button" aria-label="Schermo intero">⛶</button>
+        <button class="pdf-reader__button" id="pdf-close" type="button" aria-label="Chiudi">×</button>
+      </div>
+    </div>
+    <div class="pdf-reader__stage" id="pdf-reader-stage">
+      <canvas class="pdf-reader__canvas" id="pdf-canvas"></canvas>
     </div>
   </dialog>
 
