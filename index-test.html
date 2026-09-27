@@ -147,6 +147,11 @@
       try{
         const u=new URL(value,location.href);
         if(u.protocol==="http:"&&u.hostname.toLowerCase().endsWith(".github.io"))u.protocol="https:";
+        /* Zenodo usa ?download=1 per forzare lo scaricamento. Il lettore
+           necessita invece dell'URL diretto del file, senza quel parametro. */
+        if(u.hostname.toLowerCase()==="zenodo.org"&&u.pathname.includes("/files/")){
+          u.searchParams.delete("download");
+        }
         if(u.hostname.toLowerCase()==="github.com"){
           const parts=u.pathname.split("/").filter(Boolean),marker=parts.indexOf("blob");
           if(marker===2&&parts.length>4){
