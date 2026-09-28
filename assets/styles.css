@@ -1,27 +1,61 @@
+/* ========================================================================== 
+   PERSONALIZZAZIONE RAPIDA
+   Modifica soltanto i valori di questa sezione per cambiare l'aspetto generale.
+
+   COLORI: usa codici esadecimali (#183c35), rgb/rgba oppure nomi CSS.
+   SFONDO: "transparent" lascia vedere lo sfondo della pagina WordPress.
+   FONT: puoi inserire qui anche un font già caricato dal tema WordPress.
+   Esempio: --font-titoli: "Playfair Display", Georgia, serif;
+   ========================================================================== */
 :root {
+  /* Testi e colori principali */
   --ink: #17211f;
   --forest: #183c35;
   --forest-2: #24574b;
-  --gallery-bg: #f4f0e7;
-  --paper: var(--gallery-bg);
-  --paper-2: #e9e1d2;
   --gold: #c69a45;
   --red: #9c3f32;
+
+  /* Sfondo della galleria incorporata in WordPress.
+     Lascia "transparent" per vedere lo sfondo del sito ospitante. */
+  --gallery-bg: transparent;
+
+  /* Sfondo della scheda che si apre cliccando su una copertina.
+     È separato dallo sfondo generale per mantenere leggibili i contenuti. */
+  --paper: #f4f0e7;
+  --paper-2: #e9e1d2;
+
+  /* Barra filtri: usare transparent per integrarla nello sfondo WordPress.
+     Per una barra opaca, provare per esempio rgba(244, 240, 231, .95). */
+  --controls-bg: transparent;
+
+  /* Bordi e ombre. Impostare --line: transparent per eliminare anche
+     eventuali altri separatori sottili dell'interfaccia. */
   --line: rgba(23, 33, 31, .16);
   --shadow: 0 24px 64px rgba(20, 34, 30, .16);
-  --serif: Georgia, "Times New Roman", serif;
-  --sans: Arial, Helvetica, sans-serif;
+
+  /* Famiglie tipografiche */
+  --font-titoli: Georgia, "Times New Roman", serif;
+  --font-testo: Arial, Helvetica, sans-serif;
+
+  /* Dimensioni generali. Cambiare 16px per ingrandire/ridurre tutto il testo. */
+  --dimensione-testo: 16px;
+
+  /* Larghezza massima del contenuto e arrotondamento del lettore PDF */
+  --larghezza-contenuto: 1240px;
+  --raggio-lettore: 16px;
+
+  /* Alias interni: non è necessario modificare queste due righe. */
+  --serif: var(--font-titoli);
+  --sans: var(--font-testo);
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; background: transparent; font-size: var(--dimensione-testo); }
 body {
   margin: 0;
   color: var(--ink);
-  background-color: var(--gallery-bg);
-  background:
-    radial-gradient(circle at 12% 3%, rgba(198, 154, 69, .14), transparent 24rem),
-    linear-gradient(180deg, color-mix(in srgb, var(--gallery-bg), white 35%) 0, var(--gallery-bg) 36rem);
+  /* Sfondo intenzionalmente trasparente: la galleria assume quello WordPress. */
+  background: var(--gallery-bg);
   font-family: var(--sans);
   min-height: 100vh;
 }
@@ -31,15 +65,17 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .skip-link:focus { transform: translateY(0); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
 
-.hero { max-width: 1240px; margin: 0 auto; padding: 5.5rem 2rem 3rem; position: relative; }
+.hero { max-width: var(--larghezza-contenuto); margin: 0 auto; padding: 5.5rem 2rem 3rem; position: relative; }
 .hero__eyebrow, .kicker { color: var(--red); text-transform: uppercase; letter-spacing: .19em; font-size: .76rem; font-weight: 600; }
 .hero h1 { font: 400 clamp(3.7rem, 10vw, 8.7rem)/.78 var(--serif); letter-spacing: -.045em; margin: 1.15rem 0 2rem; max-width: 900px; }
 .hero h1 span { color: var(--forest-2); font-style: italic; padding-left: clamp(1rem, 8vw, 7rem); }
 .hero p { max-width: 610px; margin-left: auto; font-size: clamp(1rem, 2vw, 1.25rem); line-height: 1.62; }
-.hero__rule { display: flex; align-items: center; gap: 1rem; margin-top: 3.25rem; border-top: 1px solid var(--line); }
-.hero__rule span { width: 12px; height: 12px; margin-top: -6px; background: var(--gold); transform: rotate(45deg); }
+/* Separatore decorativo sotto l'introduzione nascosto.
+   Per ripristinarlo, sostituire "display: none" con "display: flex". */
+.hero__rule { display: none; }
 
-.controls { position: sticky; top: 0; z-index: 8; display: flex; gap: 1rem; justify-content: space-between; align-items: center; padding: .85rem max(2rem, calc((100vw - 1240px)/2 + 2rem)); background: rgba(244,240,231,.9); border-block: 1px solid var(--line); backdrop-filter: blur(18px); }
+/* Le linee sopra e sotto i filtri sono rimosse con border: 0. */
+.controls { position: sticky; top: 0; z-index: 8; display: flex; gap: 1rem; justify-content: space-between; align-items: center; padding: .85rem max(2rem, calc((100vw - var(--larghezza-contenuto))/2 + 2rem)); background: var(--controls-bg); border: 0; backdrop-filter: blur(18px); }
 .decades { display: flex; flex-wrap: wrap; gap: .4rem; }
 .decades button, .empty button { border: 0; border-radius: 999px; padding: .65rem 1rem; color: var(--ink); background: transparent; cursor: pointer; font-size: .86rem; }
 .decades button:hover, .decades button:focus-visible { background: var(--paper-2); }
@@ -51,8 +87,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .data-source::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: .45rem; border-radius: 50%; background: var(--gold); }
 .data-source.is-live::before { background: #37805f; box-shadow: 0 0 0 4px rgba(55,128,95,.12); }
 
-.catalog { max-width: 1240px; margin: 0 auto; padding: 3.5rem 2rem 6rem; }
-.catalog__meta { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2rem; border-bottom: 1px solid var(--line); padding-bottom: 1rem; }
+.catalog { max-width: var(--larghezza-contenuto); margin: 0 auto; padding: 3.5rem 2rem 6rem; }
+/* La linea sotto "Tutti i numeri" è rimossa con border: 0. */
+.catalog__meta { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2rem; border: 0; padding-bottom: 1rem; }
 .catalog__meta h2 { font: 400 clamp(2rem, 4vw, 3.5rem)/1 var(--serif); margin: 0; }
 .catalog__meta p { color: #59625f; }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 185px), 1fr)); gap: clamp(1rem, 2.5vw, 2.2rem); }
@@ -107,8 +144,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .pdf-button { background: #fff; color: var(--forest); padding: .9rem 1.1rem; text-decoration: none; white-space: nowrap; }
 .pdf-button--secondary { color: #fff; background: transparent; border: 1px solid rgba(255,255,255,.48); }
 .pdf-button[aria-disabled="true"] { opacity: .38; pointer-events: none; }
-.pdf-reader { width: min(1180px, 96vw); height: min(94vh, 980px); max-width: none; max-height: none; padding: 0; border: 0; border-radius: 16px; color: #fff; background: #454b4f; box-shadow: 0 28px 80px rgba(0,0,0,.52); overflow: hidden; }
-.pdf-reader.is-expanded { width: 100vw; height: 100dvh; border-radius: 0; }
+.pdf-reader { width: min(1180px, 96vw); height: min(94vh, 980px); max-width: none; max-height: none; padding: 0; border: 0; border-radius: var(--raggio-lettore); color: #fff; background: #454b4f; box-shadow: 0 28px 80px rgba(0,0,0,.52); overflow: hidden; }
 .pdf-reader::backdrop { background: rgba(12,18,20,.88); backdrop-filter: blur(4px); }
 .pdf-reader__bar { min-height: 56px; padding: 0 12px 0 18px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,.08); background: #15191c; }
 .pdf-reader__title { margin-right: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .92rem; }
