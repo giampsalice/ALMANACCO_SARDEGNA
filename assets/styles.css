@@ -34,11 +34,11 @@
   --shadow: 0 24px 64px rgba(20, 34, 30, .16);
 
   /* Famiglie tipografiche */
-  --font-titoli: Georgia, "Times New Roman", serif;
-  --font-testo: Arial, Helvetica, sans-serif;
+  --font-titoli: Palatino Linotype;
+  --font-testo: Palatino Linotype;
 
   /* Dimensioni generali. Cambiare 16px per ingrandire/ridurre tutto il testo. */
-  --dimensione-testo: 16px;
+  --dimensione-testo: 18px;
 
   /* Larghezza massima del contenuto e arrotondamento del lettore PDF */
   --larghezza-contenuto: 1240px;
