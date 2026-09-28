@@ -1,6 +1,7 @@
 # Galleria Almanacco della Sardegna
 
-Applicazione statica per consultare i numeri dell’Almanacco della Sardegna, filtrare il catalogo per decennio e aprire una scheda fronte-retro con copertina, indice e lettore PDF integrato.
+Applicazione statica realizzata da Giampaolo Salice con supporto AI nell'ambito delle attività del DH UNICA - Centro per l'Umanistica digitale dell'Università di Cagliari.
+L'applicazione consente di consultare i numeri dell’Almanacco della stampa della Sardegna, filtrare il catalogo per decennio e aprire una scheda fronte-retro con copertina, indice e lettore PDF integrato.
 
 I dati principali vengono letti da CSV pubblico configurato in `assets/config.js`. Gli indici dettagliati sono uniti al catalogo JSON generato dal file Excel.
 
