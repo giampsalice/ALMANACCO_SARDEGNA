@@ -2,7 +2,7 @@
 
 Applicazione statica per consultare i numeri dell’Almanacco della Sardegna, filtrare il catalogo per decennio e aprire una scheda fronte-retro con copertina, indice e lettore PDF integrato.
 
-I dati principali vengono letti dal CSV pubblico di Google Drive configurato in `assets/config.js`. Gli indici dettagliati sono uniti al catalogo JSON generato dal file Excel.
+I dati principali vengono letti da CSV pubblico configurato in `assets/config.js`. Gli indici dettagliati sono uniti al catalogo JSON generato dal file Excel.
 
 ## Pubblicazione su GitHub Pages
 
@@ -13,7 +13,7 @@ I dati principali vengono letti dal CSV pubblico di Google Drive configurato in 
 
 Il flusso usa le azioni ufficiali previste per GitHub Pages, richiede i permessi `pages: write` e `id-token: write` e viene eseguito anche ogni ora per aggiornare la copia del CSV.
 
-## Sorgente Google Drive
+## Sorgente 
 
 Il collegamento è configurato in `assets/config.js`:
 
