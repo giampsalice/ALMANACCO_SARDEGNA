@@ -1002,3 +1002,88 @@ iframe {
     animation-duration: .01ms !important;
   }
 }
+
+/* ========================================================================== 
+   FIX WORDPRESS / IFRAME / FULLSCREEN PDF
+   Questo blocco deve restare in fondo al file: sovrascrive le regole precedenti
+   quando il lettore PDF viene aperto dentro l'iframe incorporato in WordPress.
+   ========================================================================== */
+
+html:has(.pdf-reader[open]),
+body:has(.pdf-reader[open]) {
+  overflow: hidden;
+}
+
+.pdf-reader[open] {
+  position: fixed !important;
+  inset: 12px !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 2147483647 !important;
+}
+
+.pdf-reader.is-expanded,
+.pdf-reader:fullscreen,
+.pdf-reader:-webkit-full-screen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  max-width: 100vw !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  z-index: 2147483647 !important;
+}
+
+.pdf-reader.is-expanded .pdf-reader__bar,
+.pdf-reader:fullscreen .pdf-reader__bar,
+.pdf-reader:-webkit-full-screen .pdf-reader__bar {
+  min-height: 56px !important;
+}
+
+.pdf-reader.is-expanded .pdf-reader__stage,
+.pdf-reader:fullscreen .pdf-reader__stage,
+.pdf-reader:-webkit-full-screen .pdf-reader__stage {
+  width: 100% !important;
+  height: calc(100dvh - 56px) !important;
+  max-height: calc(100dvh - 56px) !important;
+  overflow: auto !important;
+}
+
+.pdf-reader.is-expanded .pdf-reader__canvas,
+.pdf-reader:fullscreen .pdf-reader__canvas,
+.pdf-reader:-webkit-full-screen .pdf-reader__canvas {
+  max-width: none !important;
+}
+
+@media (max-width: 650px) {
+  .pdf-reader[open],
+  .pdf-reader.is-expanded,
+  .pdf-reader:fullscreen,
+  .pdf-reader:-webkit-full-screen {
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+  }
+
+  .pdf-reader.is-expanded .pdf-reader__bar,
+  .pdf-reader:fullscreen .pdf-reader__bar,
+  .pdf-reader:-webkit-full-screen .pdf-reader__bar {
+    min-height: 98px !important;
+  }
+
+  .pdf-reader.is-expanded .pdf-reader__stage,
+  .pdf-reader:fullscreen .pdf-reader__stage,
+  .pdf-reader:-webkit-full-screen .pdf-reader__stage {
+    height: calc(100dvh - 98px) !important;
+    max-height: calc(100dvh - 98px) !important;
+  }
+}
