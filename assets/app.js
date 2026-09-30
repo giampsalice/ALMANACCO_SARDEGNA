@@ -283,6 +283,26 @@ function contentsMarkup(issue) {
   </article>`).join("");
 }
 
+
+function requestParentViewport() {
+  if (window.parent === window) return;
+  window.parent.postMessage({ type: "almanacco:requestViewport" }, "*");
+}
+
+function applyParentViewport(data) {
+  const top = Math.max(0, Number(data.top) || 0);
+  const height = Math.max(320, Number(data.height) || window.innerHeight || 700);
+  const centerY = Math.max(160, Number(data.centerY) || (top + height / 2));
+  document.documentElement.style.setProperty("--almanacco-visible-top", `${top}px`);
+  document.documentElement.style.setProperty("--almanacco-visible-height", `${height}px`);
+  document.documentElement.style.setProperty("--almanacco-dialog-center-y", `${centerY}px`);
+}
+
+window.addEventListener("message", event => {
+  if (!event.data || typeof event.data !== "object") return;
+  if (event.data.type === "almanacco:viewport") applyParentViewport(event.data);
+});
+
 function openIssue(issue) {
   state.active = issue;
   volumeCard.classList.remove("is-flipped");
@@ -294,13 +314,13 @@ function openIssue(issue) {
   $("#dialog-contents").innerHTML = contentsMarkup(issue);
   setDocumentButtons(issue);
   history.replaceState(null, "", `#numero=${encodeURIComponent(issue.id)}`);
+  requestParentViewport();
   dialog.showModal();
-  postParentOverlay(true, "detail");
+  requestAnimationFrame(requestParentViewport);
   notifyHeight();
 }
 
 function closeDialog() {
-  postParentOverlay(false, "detail");
   if (dialog.open) dialog.close();
   state.active = null;
   volumeCard.classList.remove("is-flipped");
@@ -314,15 +334,6 @@ function showToast(message) {
   toast.classList.add("is-visible");
   clearTimeout(showToast.timer);
   showToast.timer = setTimeout(() => toast.classList.remove("is-visible"), 2800);
-}
-
-function postParentOverlay(active, mode = "detail") {
-  if (window.parent === window) return;
-  window.parent.postMessage({
-    type: "almanacco:overlay",
-    active: Boolean(active),
-    mode
-  }, "*");
 }
 
 function notifyHeight() {
@@ -344,7 +355,6 @@ $("#search").addEventListener("input", event => { state.query = event.target.val
 $("#reset").addEventListener("click", () => { state.decade = "all"; state.query = ""; $("#search").value = ""; render(); });
 window.addEventListener("resize", notifyHeight);
 window.addEventListener("load", notifyHeight);
-window.addEventListener("pagehide", () => postParentOverlay(false, "detail"));
 if ("ResizeObserver" in window) new ResizeObserver(notifyHeight).observe(document.body);
 document.addEventListener("load", notifyHeight, true);
 
