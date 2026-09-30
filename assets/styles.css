@@ -1103,3 +1103,63 @@ body:has(.pdf-reader[open]) {
     max-height: calc(100dvh - 98px) !important;
   }
 }
+
+
+/* ========================================================================== 
+   FIX SCHEDA NUMERO DENTRO WORDPRESS / IFRAME
+   La scheda del numero usa <dialog>. Dentro WordPress, se l'iframe non viene
+   portato a piena finestra, il dialog puo apparire come una colonna stretta.
+   Queste regole rendono la scheda stabile quando l'iframe viene espanso
+   dal codice embed WordPress.
+   ========================================================================== */
+
+html:has(.volume-dialog[open]),
+body:has(.volume-dialog[open]) {
+  overflow: hidden;
+}
+
+.volume-dialog[open] {
+  position: fixed !important;
+  inset: clamp(12px, 2vw, 24px) !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  z-index: 2147483000 !important;
+}
+
+.volume-dialog[open] .volume {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.volume-dialog[open] .volume__front {
+  grid-template-columns: minmax(260px, .9fr) minmax(360px, 1.1fr);
+}
+
+.volume-dialog[open] .front-copy,
+.volume-dialog[open] .back-head,
+.volume-dialog[open] .contents,
+.volume-dialog[open] .pdf-panel {
+  min-width: 0;
+}
+
+.volume-dialog[open] #dialog-title,
+.volume-dialog[open] #back-title {
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+@media (max-width: 760px) {
+  .volume-dialog[open] {
+    inset: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .volume-dialog[open] .volume__front {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(260px, 46vh) auto;
+    overflow: auto;
+  }
+}

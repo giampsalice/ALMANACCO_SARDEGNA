@@ -295,11 +295,13 @@ function openIssue(issue) {
   setDocumentButtons(issue);
   history.replaceState(null, "", `#numero=${encodeURIComponent(issue.id)}`);
   dialog.showModal();
+  postParentOverlay(true, "detail");
   notifyHeight();
 }
 
 function closeDialog() {
-  dialog.close();
+  postParentOverlay(false, "detail");
+  if (dialog.open) dialog.close();
   state.active = null;
   volumeCard.classList.remove("is-flipped");
   history.replaceState(null, "", location.pathname + location.search);
@@ -312,6 +314,15 @@ function showToast(message) {
   toast.classList.add("is-visible");
   clearTimeout(showToast.timer);
   showToast.timer = setTimeout(() => toast.classList.remove("is-visible"), 2800);
+}
+
+function postParentOverlay(active, mode = "detail") {
+  if (window.parent === window) return;
+  window.parent.postMessage({
+    type: "almanacco:overlay",
+    active: Boolean(active),
+    mode
+  }, "*");
 }
 
 function notifyHeight() {
@@ -333,6 +344,7 @@ $("#search").addEventListener("input", event => { state.query = event.target.val
 $("#reset").addEventListener("click", () => { state.decade = "all"; state.query = ""; $("#search").value = ""; render(); });
 window.addEventListener("resize", notifyHeight);
 window.addEventListener("load", notifyHeight);
+window.addEventListener("pagehide", () => postParentOverlay(false, "detail"));
 if ("ResizeObserver" in window) new ResizeObserver(notifyHeight).observe(document.body);
 document.addEventListener("load", notifyHeight, true);
 
