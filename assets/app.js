@@ -315,13 +315,17 @@ function openIssue(issue) {
   setDocumentButtons(issue);
   history.replaceState(null, "", `#numero=${encodeURIComponent(issue.id)}`);
   requestParentViewport();
-  dialog.showModal();
+  dialog.hidden = false;
+  dialog.classList.add("is-open");
   requestAnimationFrame(requestParentViewport);
   notifyHeight();
 }
 
 function closeDialog() {
-  if (dialog.open) dialog.close();
+  if (!dialog.hidden) {
+    dialog.hidden = true;
+    dialog.classList.remove("is-open");
+  }
   state.active = null;
   volumeCard.classList.remove("is-flipped");
   history.replaceState(null, "", location.pathname + location.search);
@@ -350,7 +354,9 @@ document.addEventListener("click", event => {
   if (event.target.closest("[data-flip]")) volumeCard.classList.toggle("is-flipped");
 });
 dialog.addEventListener("click", event => { if (event.target === dialog) closeDialog(); });
-dialog.addEventListener("cancel", event => { event.preventDefault(); closeDialog(); });
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && !dialog.hidden) closeDialog();
+});
 $("#search").addEventListener("input", event => { state.query = event.target.value; render(); });
 $("#reset").addEventListener("click", () => { state.decade = "all"; state.query = ""; $("#search").value = ""; render(); });
 window.addEventListener("resize", notifyHeight);

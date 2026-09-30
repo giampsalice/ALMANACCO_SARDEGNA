@@ -1148,3 +1148,110 @@ body:has(.volume-dialog[open]) {
     max-height: calc(var(--almanacco-visible-height, 100dvh) - 16px) !important;
   }
 }
+
+
+/* ========================================================================== 
+   FIX FINALE: NIENTE <dialog> NATIVO DENTRO WORDPRESS / IFRAME
+   --------------------------------------------------------------------------
+   Il backdrop nativo dei dialog, dentro un iframe alto migliaia di pixel,
+   produce la striscia grigia lunghissima. Queste regole trattano scheda
+   volume e lettore PDF come pannelli fissi, senza backdrop nativo.
+   ========================================================================== */
+
+.volume-dialog[hidden],
+.pdf-reader[hidden] {
+  display: none !important;
+}
+
+.volume-dialog {
+  position: fixed !important;
+  left: 50% !important;
+  top: var(--almanacco-dialog-center-y, 50vh) !important;
+  transform: translate(-50%, -50%) !important;
+  width: min(1180px, calc(100vw - 32px)) !important;
+  height: min(820px, calc(var(--almanacco-visible-height, 100dvh) - 32px)) !important;
+  max-width: calc(100vw - 32px) !important;
+  max-height: calc(var(--almanacco-visible-height, 100dvh) - 32px) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  overflow: hidden !important;
+  z-index: 2147483600 !important;
+}
+
+.volume-dialog::backdrop,
+.pdf-reader::backdrop {
+  display: none !important;
+  background: transparent !important;
+}
+
+.volume-dialog .volume {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+.pdf-reader {
+  position: fixed !important;
+  left: 50% !important;
+  top: var(--almanacco-dialog-center-y, 50vh) !important;
+  transform: translate(-50%, -50%) !important;
+  width: min(1280px, calc(100vw - 32px)) !important;
+  height: min(900px, calc(var(--almanacco-visible-height, 100dvh) - 32px)) !important;
+  max-width: calc(100vw - 32px) !important;
+  max-height: calc(var(--almanacco-visible-height, 100dvh) - 32px) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  z-index: 2147483650 !important;
+}
+
+.pdf-reader.is-expanded,
+.pdf-reader:fullscreen,
+.pdf-reader:-webkit-full-screen {
+  left: 0 !important;
+  top: 0 !important;
+  transform: none !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  max-width: 100vw !important;
+  max-height: 100dvh !important;
+  border-radius: 0 !important;
+}
+
+.pdf-reader__stage {
+  height: calc(100% - 56px) !important;
+  max-height: calc(100% - 56px) !important;
+}
+
+@media (max-width: 650px) {
+  .volume-dialog {
+    width: calc(100vw - 16px) !important;
+    height: calc(var(--almanacco-visible-height, 100dvh) - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    max-height: calc(var(--almanacco-visible-height, 100dvh) - 16px) !important;
+  }
+
+  .pdf-reader {
+    width: calc(100vw - 16px) !important;
+    height: calc(var(--almanacco-visible-height, 100dvh) - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    max-height: calc(var(--almanacco-visible-height, 100dvh) - 16px) !important;
+    border-radius: 0 !important;
+  }
+
+  .pdf-reader.is-expanded,
+  .pdf-reader:fullscreen,
+  .pdf-reader:-webkit-full-screen {
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
+  }
+
+  .pdf-reader__stage {
+    height: calc(100% - 98px) !important;
+    max-height: calc(100% - 98px) !important;
+  }
+}

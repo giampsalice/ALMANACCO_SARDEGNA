@@ -87,7 +87,10 @@ async function openPdf(url, label) {
   restoreCanvas();
   canvas.hidden = true;
 
-  if (!reader.open) reader.showModal();
+  if (reader.hidden) {
+    reader.hidden = false;
+    reader.classList.add("is-open");
+  }
 
   try {
     documentPdf = await pdfjsLib.getDocument({ url }).promise;
@@ -201,7 +204,14 @@ fit.addEventListener("click", () => {
 
 fullscreen.addEventListener("click", toggleFullscreen);
 
-close.addEventListener("click", () => reader.close());
+function closeReader() {
+  if (reader.hidden) return;
+  reader.hidden = true;
+  reader.classList.remove("is-open");
+  reader.dispatchEvent(new Event("close"));
+}
+
+close.addEventListener("click", closeReader);
 
 function handleNativeFullscreenChange() {
   if (!document.fullscreenElement && !document.webkitFullscreenElement && reader.classList.contains("is-expanded")) {
@@ -213,12 +223,11 @@ document.addEventListener("fullscreenchange", handleNativeFullscreenChange);
 document.addEventListener("webkitfullscreenchange", handleNativeFullscreenChange);
 
 reader.addEventListener("click", event => {
-  if (event.target === reader) reader.close();
+  if (event.target === reader) closeReader();
 });
 
-reader.addEventListener("cancel", event => {
-  event.preventDefault();
-  reader.close();
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && !reader.hidden) closeReader();
 });
 
 reader.addEventListener("close", () => {
@@ -232,5 +241,5 @@ reader.addEventListener("close", () => {
 });
 
 window.addEventListener("resize", () => {
-  if (reader.open && fitWidth) renderPage();
+  if (!reader.hidden && fitWidth) renderPage();
 });
